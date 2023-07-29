@@ -1,0 +1,43 @@
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-center {
+    justify-content: space-around;
+}
+
+.center {
+    justify-content: center;
+    text-align: center;
+}
+
+.flex-top-flat {
+    align-items: self-start;
+}
+
+.flex-top-uneven {
+    align-items: center;
+}
+
+.relative {
+    position: relative;
+}
+
+.wrap {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.gap {
+    gap:10px;
+}

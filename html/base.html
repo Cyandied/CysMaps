@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cy's Maps</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/generic.css">
+    <script defer src="/js/global.js"></script>
+</head>
+<header>
+    <h1>Cy's Maps</h1>
+    <div class = "burger">
+        <div class = "click-to-display burger-button" data-id = "burg">menu</div>
+        <div class = "display hidden burger-content hide" data-id = "burg">
+        <ul>
+            {% if session["user"] %}
+            <a href="/"><li>home</li></a>
+            <a href="/profile"><li>profile</li></a>
+            <a href="/logout"><li>log-out</li></a>
+            {% else %}
+            <a href="/login"><li>log-in</li></a>
+            {% endif %}
+        </ul>
+    </div>
+    </div>
+</header>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="flash">
+    {% for message in messages %}
+    <span style="font-weight: bold;">{{ message }}</span>
+    click to dismiss
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div style="height: 10vh;"></div>
+
+{% block content %}
+{% endblock %}
+<footer>
+    made by: Cyandied
+    <a href="https://github.com/Cyandied/CysDnDSheets" target="_blank">github-link</a>
+</footer>
+
+</html>

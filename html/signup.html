@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+    <div style="height: 2vh;"></div>
+    {% if username or email%}
+    <h1>Hello!</h1>
+    <h4>I am very happy you want to join Cy's things!</h4>
+    <h4>The account you make here is <u>the</u> account you will be using when acessing any of my Cy's
+        products!</h4>
+    <div class = "signup-wrap">
+        <label>username</label>
+        <input name="username" value = "{{username}}">
+        <label>email</label>
+        <input name="email" value = "{{email}}">
+        <label>select your role</label>
+        <select name="role"><option value="player">player</option><option value="dm">dm</option></select>
+        <label>password</label>
+        <input name="password" type="password">
+        <h4>password must be at least 8 characters long and max 16 characters</h4>
+        <label>re-enter password</label>
+        <input name="password2" type="password">
+        <button name="button" value="sign-up">sign-up</button>
+    </div>
+    {% else %}
+    <h1>Hello!</h1>
+    <h4>I am very happy you want to join Cy's things!</h4>
+    <h4>The account you make here is <u>the</u> account you will be using when acessing any of my Cy's
+        products!</h4>
+    <h4>Before creating any account, I reqiure that you read and accept my terms of service.</h4>
+    <div class = "signup-wrap">
+        <div class="ToS">
+            <span>{{ToS}}</span>
+            <h4>I have read and understood the contents of this document, and I accept the terms of service detailed
+                within it.</h4>
+            <button class="accept-tos">I accept</button>
+        </div>
+    </div>
+    {% endif %}
+</form>
+<script defer src="/js/signup.js"></script>
+{% endblock %}

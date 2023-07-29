@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content" style="width: 90%; margin: 0 auto;">
+    <div style="height: 2vh;"></div>
+    <h1>Login</h1>
+    <form method="post">
+        <h4>Username</h4>
+        <input type="text" name="user" id = "username">
+        <h4>Password</h4>
+        <input type="password" name="pass" id = "password">
+        <button>Log-In</button>
+        <h3>
+            Dont have a profile yet?
+            <a href="/signup">Make one!</a>
+        </h3>
+    </form>
+</div>
+{% endblock %}
