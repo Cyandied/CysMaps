@@ -1,5 +1,6 @@
 import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import zipfile
 from os import listdir, remove
 from os.path import isfile, join
 from flask_login import (
@@ -18,10 +19,12 @@ from backend.classes import *
 # flask --app server run --debug
 
 client = PocketBase("http://127.0.0.1:8090")
-
+UPLOAD_FOLDER = '/temp'
+ALLOWED_EXTENSIONS = {"zip", "rar"}
 app = Flask(
     __name__, static_url_path="", static_folder="static", template_folder="html"
 )
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.secret_key = "i/2r:='d8$V{[:gHm5x?#YBB-D-6)N"
 adminPass = "7ABC44E3647B1ACE58E5065FD0E8D82BF353418556AF1A80F983D44808640E8F"
@@ -57,7 +60,7 @@ def load_user(user_id):
 
         if user_id == user.id:
             return User(
-                user.username, email, user.role, games, user.id, packs, user.secret
+                user.username, email, user.role, games, user.id, packs, user.secret, user.allowed_maps, user.nr_maps, user.max_maps
             )
 
 
@@ -102,7 +105,7 @@ def login():
                 email = user["email"]
 
             verified_user = User(
-                user.username, email, user.role, games, user.id, packs, user.secret
+                user.username, email, user.role, games, user.id, packs, user.secret, user.allowed_maps, user.nr_maps, user.max_maps
             )
 
         if verified_user:
@@ -177,8 +180,35 @@ def signup():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    
     return render_template("index.html")
+
+@app.route("/mapmanager", methods=["GET","POST"])
+@login_required
+def mapman():
+    avaible_maps = ["genericMap"]
+    if session["user"]["allowed_maps"]:
+        if session["user"]["id"] in listdir("userfolders"):
+            user_maps = listdir(join("userfolders",session["user"]["id"],"maps"))
+            for user_map in user_maps:
+                avaible_maps.append(user_map)
+
+    else:
+        print("no")
+    
+    if request.method == "POST":
+        form = request.form
+        if "direct-to-map" in form:
+            return redirect(url_for("display_map", selected_map = form["direct-to-map"]))
+        if "map_zip" in request.files:
+            print(request.files["map_zip"], "\nWE DID IT!")
+
+    return render_template("mapman.html", maps = avaible_maps)
+
+@app.route(f'/map/<selected_map>', methods=["GET", "POST"])
+@login_required
+def display_map(selected_map):
+
+    return render_template("display_map.html", map = selected_map)
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
@@ -190,4 +220,4 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    app.run("127.0.0.1", 5001, debug=True)
+    app.run("127.0.0.1", 5030, debug=True)

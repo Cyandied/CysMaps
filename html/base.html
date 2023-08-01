@@ -18,9 +18,11 @@
         <ul>
             {% if session["user"] %}
             <a href="/"><li>home</li></a>
+            <a href="/mapmanager"><li>manage maps</li></a>
             <a href="/profile"><li>profile</li></a>
             <a href="/logout"><li>log-out</li></a>
             {% else %}
+            <a href="/"><li>home</li></a>
             <a href="/login"><li>log-in</li></a>
             {% endif %}
         </ul>
@@ -44,7 +46,7 @@
 {% endblock %}
 <footer>
     made by: Cyandied
-    <a href="https://github.com/Cyandied/CysDnDSheets" target="_blank">github-link</a>
+    <a href="https://github.com/Cyandied/CysMaps" target="_blank">github-link</a>
 </footer>
 
 </html>

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" enctype=multipart/form-data>
+    {% if maps %}
+    {% for map in maps %}
+    <button name="direct-to-map" value="{{map}}">{{map}}</button>
+    {% endfor %}
+    {% endif %}
+    <h3>
+        upload map:
+    </h3>
+    <input name="map_zip" type="file" accept=".zip, .rar" />
+    <button>upload</button>
+</form>
+{% endblock %}
