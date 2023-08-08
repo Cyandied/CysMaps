@@ -199,6 +199,16 @@ def signup():
         "signup.html", ToS=ToS, username=data["username"], email=data["email"]
     )
 
+@app.before_request
+def before_request():
+    request_blocks = request.url.split("/")
+    if "userfolders" in request_blocks:
+        index = request_blocks.index("userfolders")
+        user_id = request_blocks[index+1]
+        if user_id != session["user"]["id"]:
+            flash("Seems you are trying to access content that does not belong to you :(")
+            return redirect(url_for("home"))
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -247,6 +257,10 @@ def mapman():
 @app.route(f"/map/<selected_map>", methods=["GET", "POST"])
 @login_required
 def display_map(selected_map):
+    if selected_map == "genericMap":
+        if "genericMap" not in listdir(join("static","userfolders",session["user"]["id"])):
+            mkdir(join("static","userfolders",session["user"]["id"],selected_map))
+            update_map_settings(session,selected_map)
 
     session["current_marker"] = None
     recent_marker = None
@@ -274,6 +288,8 @@ def display_map(selected_map):
 
     map_markers = {}
     path = join("userfolders", session["user"]["id"], selected_map, "map_tiles")
+    if selected_map == "genericMap":
+        path = join("images", selected_map, "map_tiles")
     zoomlvls = listdir(join("static",path))
     icons = listdir(join("static","images","icons"))
     with open(join("static","userfolders",session["user"]["id"],selected_map,"map_settings.json"),"r") as f:
@@ -285,13 +301,20 @@ def display_map(selected_map):
 
     return render_template("display_map.html", map=selected_map, maxzoom=zoomlvls[-1],minzoom=zoomlvls[0],path=path, map_settings=map_settings, map_markers=map_markers, icons= icons, messages = display_messages, curr_marker = session["current_marker"], recent_marker =recent_marker)
 
+@app.route("/tutorial", methods=["GET", "POST"])
+def tutorial():
+
+    return render_template("tutorial.html")
+
 @app.route(f"/map/<selected_map>/map_markers", methods=["GET", "POST"])
 @login_required
 def map_markers(selected_map):
     if "map_markers.json" in listdir(join("static","userfolders",session["user"]["id"],selected_map)):
         with open(join("static","userfolders",session["user"]["id"],selected_map,"map_markers.json"),"r") as f:
             map_markers = json.load(f)
-    return map_markers
+        return map_markers
+    else:
+        return {}
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
@@ -301,7 +324,6 @@ def logout():
     session["user"] = None
     session["hw"] = None
     return redirect(url_for("login"))
-
 
 if __name__ == "__main__":
     app.run("127.0.0.1", 5030, debug=True)

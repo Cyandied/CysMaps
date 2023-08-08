@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<form>
+    <h1>Welcome to the tutorial!</h1>
+    <h3>Here I will go over a few things to keep in mind when using CysMaps!</h3>
+    <br>
+    <h2>How do I make a map?</h2>
+    Well, I wont teach you how to make one from scrach, to figure that out <a href="https://www.youtube.com/watch?v=lE3MmBpUCIY">consider consulting a helpful youtibe video</a>, <a href="https://www.dickwizardry.com/articles/5-amazing-free-fantasy-map-builders">genarate your own with an online solution</a>, or <a href="https://freefantasymaps.org/">find a free to use one</a>.
+    <br>
+    Once you have your map, it might be a tad small. Sizing it up will do no good, so I reccomend using a program like <a href="https://inkscape.org/">Inkscape</a> to vectorize your map. Simply <a href="https://inkscape-manuals.readthedocs.io/en/latest/tracing-an-image.html">trace your map</a> and save it in the desired size!
+    <br>
+    <h2>How do I cut my map up?</h2>
+    Either find your own tile-cutting service, there is one for photoshop, <a href="https://www.youtube.com/watch?v=EmfE9VyAYcY">tutorial here</a>.
+    If you dont have Photoshop (me too buddy), use my <a href="https://github.com/Cyandied/CysTileCutter" target="_blank">my tilecutter</a>! It requres vs-code to run, but that preogram is free, as opposed to Photoshop.
+    Make sure you read my tile-cutter tutorial carefully even if you go the Photoshop route! You will still need to adhere to the rules I set up there!
+    <h2>I have my tile map, now what do I do?</h2>
+    Simply zip the folder housing the tiles, <strong>call this folder "map_tiles"!!!!</strong>, name the zip folder your desired map name, and upload it in the map manager!
+    <h2>I dont want to make my own map, I just want to try out CysMaps</h2>
+    Thats fine
+    <br>
+    I made a generic map for you to use, simply access that from the map manager and you can now play around with all the features I made!
+    <h2>What can I do with my map?</h2>
+    I have thus far only implemented the ability to add markers to your map! But they already offer a million options in regards to building your world!
+    <br>
+    <h3>Planned features:</h3>
+    <ul>
+        <li>GEOjson implementation</li>
+        <li>Making regions and zones</li>
+        <li>Sharing maps between users</li>
+        <li>Added security to maps</li>
+        <li>Cross linking maps</li>
+        <li>Adding measuring and costumizable scaling to maps</li>
+    </ul>
+    <h1>FAQ</h1>
+    <h2>Have questions? Throw it my way on the discussion board on the github!</h2>
+</form>
+{% endblock %}
