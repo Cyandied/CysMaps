@@ -9,30 +9,40 @@
             <input type="text" value="{{minzoom}}" class="hidden" id="min-zoom">
             <input type="text" value="{{path}}" class="hidden" id="path">
 
+            <input type="text" value="{{recent_marker}}" class="hidden" id="recent-marker">
+
             <input type="text" name="curr.lat" id="curr-lat" class="hidden">
             <input type="text" name="curr.lang" id="curr-lang" class="hidden">
 
             <div id="map"></div>
-
-            {% for setting in map_settings %}
-            <label for="{{setting}}">{{setting |replace("_"," ")}}</label>
-            {% if setting != "bg_color" %}
-            <input type="text" name="{{setting}}" id="{{setting}}" value="{{map_settings[setting]}}">
-            {% else %}
-            <input type="color" name="{{setting}}" id="{{setting}}" value="{{map_settings[setting]}}">
-            {% endif %}
-            {% endfor %}
-            <button>update</button>
+            <div class="map-settings">
+                {% for setting in map_settings %}
+                <div>
+                    <label for="{{setting}}">{{setting |replace("_"," ")}}</label>
+                    {% if setting != "bg_color" %}
+                    <input type="text" name="{{setting}}" id="{{setting}}" value="{{map_settings[setting]}}">
+                    {% else %}
+                    <input type="color" name="{{setting}}" id="{{setting}}" value="{{map_settings[setting]}}">
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button>update</button>
+            </div>
         </div>
         <div class="half">
             <div>
+                <div id="none" class="show-marker {% if curr_marker %} hidden {% endif %}">
+                    <h1>This is where your markers will display</h1>
+                    {% set selected_message = messages|random %}
+                    <h3>{{selected_message}}</h3>
+                </div>
                 {% for current_marker in map_markers %}
                 {% set marker = map_markers[current_marker] %}
-                <div id="{{marker.id}}" class="show-marker hidden">
+                <div id="{{marker.id}}" class="show-marker {% if curr_marker != marker.id %} hidden {% endif %}">
                     <h1>{{marker.name}}</h1>
-                    <strong>Marker at position, lat:{{marker.pos[0]}} lang:{{marker.pos[1]}}</strong>
-                    <div style="white-space: pre-wrap;">{{marker.desc}}</div>
-                    <div>
+                    <strong>Marker at position, lat: {{marker.pos[0]|round}} lang: {{marker.pos[1]|round}}</strong>
+                    <div class="desc">{{marker.desc}}</div>
+                    <div class="display-attrib">
                         {% for attribute in marker.attributes %}
                         <div>
                             <label for="{{attribute}}">{{attribute}}</label>
@@ -42,13 +52,14 @@
                     </div>
                     <button type="button" class="click-to-display" data-id="edit.{{marker.id}}">edit this
                         marker</button>
+                    <button name="delete-marker" value="{{marker.id}}" style="background-color: brown;color: white;">delete marker</button>
                 </div>
                 <div class="display edit-marker hidden" data-id="edit.{{marker.id}}" id="edit.{{marker.id}}">
                     {% for content in marker %}
                     {% if content != "id" %}
                     <h3>{{content}}</h3>
                     {% if content == "attributes" %}
-                    <div class="attributes" data-id = "{{marker.id}}">
+                    <div class="attributes" data-id="{{marker.id}}">
                         <div>
                             <input type="text" value="Name" disabled style="text-align: center;">
                             <input type="text" value="Value" disabled style="text-align: center;">
@@ -79,15 +90,17 @@
                         </div>
                     </div>
                     {% elif content == "icon" %}
-                    <input type="text" name="{{marker.id}}.{{content}}" value="{{marker[content]}}" class="curr-icon hidden" data-id = "{{marker.id}}">
+                    <input type="text" name="{{marker.id}}.{{content}}" value="{{marker[content]}}"
+                        class="curr-icon hidden" data-id="{{marker.id}}">
                     <div id="icon-wrap">
                         <div class="selected-icon click-to-display" data-id="icon-selector">
-                            <img src="/images/icons/{{marker[content]}}" class="display-image" data-id = {{marker.id}}>
+                            <img src="/images/icons/{{marker[content]}}" class="display-image" data-id={{marker.id}}>
                         </div>
                         <div class="display icon-selector hidden" data-id="icon-selector">
                             {% for icon in icons %}
                             <img src="/images/icons/{{icon}}" class="image-to-select {% if
-                                icon==marker[content] %} selected {% endif %}" data-icon="{{icon}}" data-id = "{{marker.id}}">
+                                icon==marker[content] %} selected {% endif %}" data-icon="{{icon}}"
+                                data-id="{{marker.id}}">
                             {% endfor %}
                         </div>
                     </div>

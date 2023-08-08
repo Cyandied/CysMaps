@@ -15,7 +15,7 @@ from flask_login import (
 from pocketbase import PocketBase
 import json
 
-from backend.func import make_new_map, update_map_settings, update_map_marker
+from backend.func import make_new_map, update_map_settings, update_map_marker, display_messages, delete_marker
 
 from backend.classes import *
 
@@ -247,6 +247,9 @@ def mapman():
 @app.route(f"/map/<selected_map>", methods=["GET", "POST"])
 @login_required
 def display_map(selected_map):
+
+    session["current_marker"] = None
+    recent_marker = None
  
     if request.method == "POST":
         form = request.form
@@ -260,9 +263,14 @@ def display_map(selected_map):
                 for i, key in enumerate(keys):
                     if key:
                         attribs[key] = vals[i]
-            update_map_marker(session, selected_map,form[f'{target}.name'],form[f'{target}.desc'],form[f'{target}.icon'],attribs,[form[f'{target}.lat'],form[f'{target}.lang']],target)
+            update_map_marker(session, selected_map,form[f'{target}.name'],form[f'{target}.desc'],form[f'{target}.icon'],attribs,[float(form[f'{target}.lat']),float(form[f'{target}.lang'])],target)
+            session["current_marker"] = target
         if "make-marker" in form:
-            update_map_marker(session,selected_map,"New Marker","","1.png",{},[form["curr.lat"],form["curr.lang"]])
+            session["current_marker"] = update_map_marker(session,selected_map,"New Marker","","1.png",{},[float(form["curr.lat"]),float(form["curr.lang"])])
+            recent_marker = [float(form["curr.lat"]),float(form["curr.lang"])]
+        if "delete-marker" in form:
+            marker_name = delete_marker(session, selected_map,form["delete-marker"])
+            flash(f'The marker: {marker_name}, has been deleted')
 
     map_markers = {}
     path = join("userfolders", session["user"]["id"], selected_map, "map_tiles")
@@ -275,7 +283,7 @@ def display_map(selected_map):
             map_markers = json.load(f)
 
 
-    return render_template("display_map.html", map=selected_map, maxzoom=zoomlvls[-1],minzoom=zoomlvls[0],path=path, map_settings=map_settings, map_markers=map_markers, icons= icons)
+    return render_template("display_map.html", map=selected_map, maxzoom=zoomlvls[-1],minzoom=zoomlvls[0],path=path, map_settings=map_settings, map_markers=map_markers, icons= icons, messages = display_messages, curr_marker = session["current_marker"], recent_marker =recent_marker)
 
 @app.route(f"/map/<selected_map>/map_markers", methods=["GET", "POST"])
 @login_required

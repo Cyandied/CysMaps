@@ -9,6 +9,7 @@ async function doAll() {
     const max_zoom = document.querySelector("#max-zoom").value
     const min_zoom = document.querySelector("#min-zoom").value
     const path = document.querySelector("#path").value
+    const recent_marker = document.querySelector("#recent-marker").value
 
     const default_pos = document.querySelector("#start_pos").value
     const default_zoom = document.querySelector("#start_zoom").value
@@ -16,7 +17,14 @@ async function doAll() {
 
     const current_map = document.querySelector("#map")
 
-    var map = L.map("map").setView(eval(default_pos), parseInt(default_zoom))
+    let pos = eval(default_pos)
+    let zoom = parseInt(default_zoom)
+    if(recent_marker != "None"){
+        pos = eval(recent_marker)
+        zoom = parseInt(max_zoom)-1
+    }
+
+    var map = L.map("map").setView(pos, zoom)
 
     L.tileLayer(`/${path}/{z}/{x}/{y}.png`, {
         minZoom: parseInt(min_zoom),
