@@ -30,3 +30,19 @@ class User:
 
     def get_id(self):
         return str(self.id)
+
+class MapSettings:
+    def __init__(self, start_pos = None, start_zoom = None, title = None, bg_color = None, exsisting_dict = None) -> None:
+        self.start_pos = start_pos if exsisting_dict == None else exsisting_dict["start_pos"]
+        self.start_zoom = start_zoom if exsisting_dict == None else exsisting_dict["start_zoom"]
+        self.title = title if exsisting_dict == None else exsisting_dict["title"]
+        self.bg_color = bg_color if exsisting_dict == None else exsisting_dict["bg_color"]
+
+class Marker:
+    def __init__(self, name:str, desc:str, icon:str,attributes:dict,pos:list[float],id = None, exsisting_marker = None) -> None:
+        self.name = name if exsisting_marker == None else exsisting_marker["name"]
+        self.desc = desc if exsisting_marker == None else exsisting_marker["desc"]
+        self.icon = icon if exsisting_marker == None else exsisting_marker["icon"]
+        self.attributes = attributes if exsisting_marker == None else exsisting_marker["attributes"]
+        self.pos = pos if exsisting_marker == None else exsisting_marker["pos"]
+        self.id = "cy" + str(uuid.uuid4()) if id == None else id

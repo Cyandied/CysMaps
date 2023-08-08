@@ -1,7 +1,8 @@
 import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import zipfile
-from os import listdir, remove
+from zipfile import ZipFile
+from os import listdir, remove, mkdir, makedirs
 from os.path import isfile, join
 from flask_login import (
     LoginManager,
@@ -12,6 +13,9 @@ from flask_login import (
     current_user,
 )
 from pocketbase import PocketBase
+import json
+
+from backend.func import make_new_map, update_map_settings, update_map_marker
 
 from backend.classes import *
 
@@ -19,12 +23,12 @@ from backend.classes import *
 # flask --app server run --debug
 
 client = PocketBase("http://127.0.0.1:8090")
-UPLOAD_FOLDER = '/temp'
-ALLOWED_EXTENSIONS = {"zip", "rar"}
+UPLOAD_FOLDER = "/temp"
+ALLOWED_EXTENSIONS = {"zip"}
 app = Flask(
     __name__, static_url_path="", static_folder="static", template_folder="html"
 )
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 app.secret_key = "i/2r:='d8$V{[:gHm5x?#YBB-D-6)N"
 adminPass = "7ABC44E3647B1ACE58E5065FD0E8D82BF353418556AF1A80F983D44808640E8F"
@@ -60,7 +64,16 @@ def load_user(user_id):
 
         if user_id == user.id:
             return User(
-                user.username, email, user.role, games, user.id, packs, user.secret, user.allowed_maps, user.nr_maps, user.max_maps
+                user.username,
+                email,
+                user.role,
+                games,
+                user.id,
+                packs,
+                user.secret,
+                user.allowed_maps,
+                user.nr_maps,
+                user.max_maps,
             )
 
 
@@ -105,7 +118,16 @@ def login():
                 email = user["email"]
 
             verified_user = User(
-                user.username, email, user.role, games, user.id, packs, user.secret, user.allowed_maps, user.nr_maps, user.max_maps
+                user.username,
+                email,
+                user.role,
+                games,
+                user.id,
+                packs,
+                user.secret,
+                user.allowed_maps,
+                user.nr_maps,
+                user.max_maps,
             )
 
         if verified_user:
@@ -182,33 +204,86 @@ def signup():
 def home():
     return render_template("index.html")
 
-@app.route("/mapmanager", methods=["GET","POST"])
+
+@app.route("/mapmanager", methods=["GET", "POST"])
 @login_required
 def mapman():
     avaible_maps = ["genericMap"]
     if session["user"]["allowed_maps"]:
-        if session["user"]["id"] in listdir("userfolders"):
-            user_maps = listdir(join("userfolders",session["user"]["id"],"maps"))
+        if session["user"]["id"] in listdir("static/userfolders"):
+            user_maps = listdir(join("static","userfolders", session["user"]["id"]))
             for user_map in user_maps:
                 avaible_maps.append(user_map)
 
     else:
         print("no")
-    
+
     if request.method == "POST":
         form = request.form
         if "direct-to-map" in form:
-            return redirect(url_for("display_map", selected_map = form["direct-to-map"]))
+            return redirect(url_for("display_map", selected_map=form["direct-to-map"]))
         if "map_zip" in request.files:
-            print(request.files["map_zip"], "\nWE DID IT!")
+            file = request.files["map_zip"]
+            if zipfile.is_zipfile(file):
+                map_name = file.filename.split(".")[0]
+                if session["user"]["id"] not in listdir("static/userfolders"):
+                    mkdir(join("static","userfolders", session["user"]["id"]))
+                makedirs(join("static","userfolders", session["user"]["id"], map_name))
+                file = ZipFile(file)
+                msg_bool = make_new_map(file,map_name,session)
+                if msg_bool[1]:
+                    avaible_maps.append(map_name)
+                    flash(msg_bool[0])
+                else:
+                    flash(msg_bool[0])
+            else:
+                flash(
+                    f"Sorry, the file you uploaded is not an accepted filetype. Accepted filetypes are: {ALLOWED_EXTENSIONS}"
+                )
 
-    return render_template("mapman.html", maps = avaible_maps)
+    return render_template("mapman.html", maps=avaible_maps)
 
-@app.route(f'/map/<selected_map>', methods=["GET", "POST"])
+
+@app.route(f"/map/<selected_map>", methods=["GET", "POST"])
 @login_required
 def display_map(selected_map):
+ 
+    if request.method == "POST":
+        form = request.form
+        update_map_settings(session, selected_map,form["start_pos"],form["start_zoom"],form["title"],form["bg_color"])
+        if "edit-marker" in form:
+            target = form["edit-marker"]
+            attribs = {}
+            if f'{target}.attribute.key' in form:
+                keys = form.getlist(f'{target}.attribute.key')
+                vals = form.getlist(f'{target}.attribute.val')
+                for i, key in enumerate(keys):
+                    if key:
+                        attribs[key] = vals[i]
+            update_map_marker(session, selected_map,form[f'{target}.name'],form[f'{target}.desc'],form[f'{target}.icon'],attribs,[form[f'{target}.lat'],form[f'{target}.lang']],target)
+        if "make-marker" in form:
+            update_map_marker(session,selected_map,"New Marker","","1.png",{},[form["curr.lat"],form["curr.lang"]])
 
-    return render_template("display_map.html", map = selected_map)
+    map_markers = {}
+    path = join("userfolders", session["user"]["id"], selected_map, "map_tiles")
+    zoomlvls = listdir(join("static",path))
+    icons = listdir(join("static","images","icons"))
+    with open(join("static","userfolders",session["user"]["id"],selected_map,"map_settings.json"),"r") as f:
+        map_settings = json.load(f)
+    if "map_markers.json" in listdir(join("static","userfolders",session["user"]["id"],selected_map)):
+        with open(join("static","userfolders",session["user"]["id"],selected_map,"map_markers.json"),"r") as f:
+            map_markers = json.load(f)
+
+
+    return render_template("display_map.html", map=selected_map, maxzoom=zoomlvls[-1],minzoom=zoomlvls[0],path=path, map_settings=map_settings, map_markers=map_markers, icons= icons)
+
+@app.route(f"/map/<selected_map>/map_markers", methods=["GET", "POST"])
+@login_required
+def map_markers(selected_map):
+    if "map_markers.json" in listdir(join("static","userfolders",session["user"]["id"],selected_map)):
+        with open(join("static","userfolders",session["user"]["id"],selected_map,"map_markers.json"),"r") as f:
+            map_markers = json.load(f)
+    return map_markers
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
@@ -218,6 +293,7 @@ def logout():
     session["user"] = None
     session["hw"] = None
     return redirect(url_for("login"))
+
 
 if __name__ == "__main__":
     app.run("127.0.0.1", 5030, debug=True)
